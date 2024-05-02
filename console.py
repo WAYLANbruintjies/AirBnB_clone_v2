@@ -6,7 +6,7 @@ import re
 import shlex
 import ast
 from models.base_model import BaseModel
-from models.__init__ import storage
+from models import storage
 from models.user import User
 from models.place import Place
 from models.state import State
@@ -14,6 +14,40 @@ from models.city import City
 from models.amenity import Amenity
 from models.review import Review
 
+
+def split_curly_braces(e_arg):
+    """
+    Splits the curly braces for the update method
+    """
+    curly_braces = re.search(r"\{(.*?)\}", e_arg)
+
+    if curly_braces:
+        id_with_comma = shlex.split(e_arg[:curly_braces.span()[0]])
+        id = [i.strip(",") for i in id_with_comma][0]
+
+        str_data = curly_braces.group(1)
+        try:
+            arg_dict = ast.literal_eval("{" + str_data + "}")
+        except Exception:
+            print("**  invalid dictionary format **")
+            return
+        return id, arg_dict
+    else:
+        commands = e_arg.split(",")
+        if commands:
+            try:
+                id = commands[0]
+            except Exception:
+                return "", ""
+            try:
+                attr_name = commands[1]
+            except Exception:
+                return id, ""
+            try:
+                attr_value = commands[2]
+            except Exception:
+                return id, attr_name
+            return f"{id}", f"{attr_name} {attr_value}"
 
 class HBNBCommand(cmd.Cmd):
     """ Contains the functionality for the HBNB console"""
@@ -121,18 +155,41 @@ class HBNBCommand(cmd.Cmd):
         Create a new instance (obj) of BaseModel and save it
                 Usage: create <class_name>
         """
-        args = arg.split()
-        if len(args) == 0:
-            print("** class name missing **")
-            return False
-        if args[0] in classes:
-            new_dict = self._key_value_parser(args[1:])
-            instance = classes[args[0]](**new_dict)
-        else:
-            print("** class doesn't exist **")
-            return False
-        print(instance.id)
-        instance.save()
+        try:
+            class_name = arg.split(" ")[0]
+            if len(class_name) == 0:
+                print("** class name missing **")
+                return
+            if class_name and class_name not in self.valid_classes:
+                print("** class doesn't exist **")
+                return
+
+            kwargs = {}
+            commands = arg.split(" ")
+            for i in range(1, len(commands)):
+
+                key = commands[i].split("=")[0]
+                value = commands[i].split("=")[1]
+                #key, value = tuple(commands[i].split("="))
+                if value.startswith('"'):
+                    value = value.strip('"').replace("_", " ")
+                else:
+                    try:
+                        value = eval(value)
+                    except (SyntaxError, NameError):
+                        continue
+                kwargs[key] = value
+
+            if kwargs == {}:
+                new_instance = eval(class_name)()
+            else:
+                new_instance = eval(class_name)(**kwargs)
+            storage.new(new_instance)
+            print(new_instance.id)
+            storage.save()
+        except ValueError:
+            print(ValueError)
+            return
 
     def help_create(self):
         """ Help information for the create method """
