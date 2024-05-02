@@ -113,37 +113,48 @@ class HBNBCommand(cmd.Cmd):
         """ Overrides the emptyline method of CMD """
         pass
 
-    def do_create(self, args):
-        """ Create an object of any class"""
+    def do_create(self, arg):
+        """
+        Create a new instance (obj) of BaseModel and save it
+                Usage: create <class_name>
+        """
         try:
-            class_name = args.split(" ")[0]
-        except IndexError:
-            pass
-        if not class_name:
-            print("** class name missing **")
-            return
-        elif class_name not in HBNBCommand.classes:
-            print("** class doesn't exist **")
-            return
-        new_list = args.split(" ")
-        new_instance = eval(class_name)()
+            class_name = arg.split(" ")[0]
+            if len(class_name) == 0:
+                print("** class name missing **")
+                return
+            if class_name and class_name not in self.valid_classes:
+                print("** class doesn't exist **")
+                return
 
-        for i in range(1, len(new_list)):
-           key, value = tuple(new_list[1].split("="))
-           if value.startswith('"'):
-               value = value.strip('"').replace("_", " ")
-           else:
-               try:
-                   value = eval(value)
-               except Exception:
-                   print(f"** couldn't evaluate {value} **")
-                   pass
-           if hasattr(new_instance, key):
-               setattr(new_instance, key, value)
+            kv_pairs = {}
+            commands = arg.split(" ")
+            for n in range(1, len(commands)):
 
-        storage.new(new_instance)
-        print(new_instance.id)
-        new_instance.save()
+                key = commands[n].split("=")[0]
+                value = commands[n].split("=")[1]
+                
+                """key, value = tuple(commands[i].split("="))"""
+                if value.startswith('"'):
+                    value = value.strip('"').replace("_", " ")
+                else:
+                    try:
+                        value = eval(value)
+                    except (SyntaxError, NameError):
+                        continue
+                kv_pairs[key] = value
+
+            if kv_pairs == {}:
+                new_instance = eval(class_name)()
+            else:
+                new_instance = eval(class_name)(**kv_pairs)
+
+            storage.new(new_instance)
+            print(new_instance.id)
+            storage.save()
+        except ValueError:
+            print(ValueError)
+            return
 
     def help_create(self):
         """ Help information for the create method """
