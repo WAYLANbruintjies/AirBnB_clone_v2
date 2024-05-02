@@ -157,6 +157,8 @@ class HBNBCommand(cmd.Cmd):
         """
         try:
             class_name = arg.split(" ")[0]
+        except IndexError:
+            pass
             if len(class_name) == 0:
                 print("** class name missing **")
                 return
@@ -165,12 +167,12 @@ class HBNBCommand(cmd.Cmd):
                 return
 
             kwargs = {}
-            commands = arg.split(" ")
+            commands = args.split(" ")
             for i in range(1, len(commands)):
 
                 key = commands[i].split("=")[0]
                 value = commands[i].split("=")[1]
-                #key, value = tuple(commands[i].split("="))
+                """key, value = tuple(commands[i].split("="))"""
                 if value.startswith('"'):
                     value = value.strip('"').replace("_", " ")
                 else:
