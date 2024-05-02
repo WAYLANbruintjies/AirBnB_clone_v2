@@ -6,7 +6,7 @@ import re
 import shlex
 import ast
 from models.base_model import BaseModel
-from models import storage
+from models.__init__ import storage
 from models.user import User
 from models.place import Place
 from models.state import State
@@ -116,48 +116,23 @@ class HBNBCommand(cmd.Cmd):
         """ Overrides the emptyline method of CMD """
         pass
 
-    def do_create(self, arg):
+    def do_create(self, args):
         """
         Create a new instance (obj) of BaseModel and save it
                 Usage: create <class_name>
         """
-        try:
-            class_name = arg.split(" ")[0]
-            if len(class_name) == 0:
-                print("** class name missing **")
-                return
-            if class_name and class_name not in self.valid_classes:
-                print("** class doesn't exist **")
-                return
-
-            kv_pairs = {}
-            commands = arg.split(" ")
-            for n in range(1, len(commands)):
-
-                key = commands[n].split("=")[0]
-                value = commands[n].split("=")[1]
-                
-                """key, value = tuple(commands[i].split("="))"""
-                if value.startswith('"'):
-                    value = value.strip('"').replace("_", " ")
-                else:
-                    try:
-                        value = eval(value)
-                    except (SyntaxError, NameError):
-                        continue
-                kv_pairs[key] = value
-
-            if kv_pairs == {}:
-                new_instance = eval(class_name)()
-            else:
-                new_instance = eval(class_name)(**kv_pairs)
-
-            storage.new(new_instance)
-            print(new_instance.id)
-            storage.save()
-        except ValueError:
-            print(ValueError)
-            return
+        args = arg.split()
+        if len(args) == 0:
+            print("** class name missing **")
+            return False
+        if args[0] in classes:
+            new_dict = self._key_value_parser(args[1:])
+            instance = classes[args[0]](**new_dict)
+        else:
+            print("** class doesn't exist **")
+            return False
+        print(instance.id)
+        instance.save()
 
     def help_create(self):
         """ Help information for the create method """
