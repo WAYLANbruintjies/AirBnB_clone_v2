@@ -7,7 +7,7 @@ Add_Contributions: Waylan Bruintjies - This is an updated version/version2 of th
 ---
 
 <center><h3>Repository Contents by Project Task</h3> </center>
-
+<img src="https://camo.githubusercontent.com/caec0e242c37c8a6d6afbcf19dcbc583ff68b2be7746613320142a72d3810d48/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f696e7472616e65742d70726f6a656374732d66696c65732f636f6e63657074732f37342f68626e625f73746570322e706e67"></img>
 | Tasks | Files | Description |
 | ----- | ----- | ------ |
 | 0: Authors/README File | [AUTHORS](https://github.com/justinmajetich/AirBnB_clone/blob/dev/AUTHORS) | Project authors |
