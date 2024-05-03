@@ -1,6 +1,13 @@
 #!/usr/bin/python3
 """This module defines a class to manage file storage for hbnb clone"""
 import json
+from models.base_model import BaseModel
+from models.place import Place
+from models.city import City
+from models.state import State
+from models.amenity import Amenity
+from models.user import User
+from models.review import Review
 
 
 class FileStorage:
@@ -8,8 +15,23 @@ class FileStorage:
     __file_path = 'file.json'
     __objects = {}
 
-    def all(self):
-        """Returns a dictionary of models currently in storage"""
+    def all(self, cls=None):
+        """
+        Returns a dictionary of models currently in storage
+        
+        Args:
+            cls (class) is optional: It filters the result to include
+            only objects of the specified/given class.
+            
+            cls Returns: a dictionary of objects in storage
+        """
+        if cls:
+            if isinstance(cls, str):
+                cls = globals().get(cls)
+            if cls and issubclass(cls, BaseModel):
+                cls_dict = {key: value for key,
+                            value in self.__objects.items() if isinstance(value, cls)}
+                return cls_dict
         return FileStorage.__objects
 
     def new(self, obj):
@@ -47,4 +69,21 @@ class FileStorage:
                 for key, val in temp.items():
                         self.all()[key] = classes[val['__class__']](**val)
         except FileNotFoundError:
+            pass
+
+    def delete(self, obj=None):
+        """
+        Delete obj from __objects if it’s inside - if obj equals None,
+        the method should not do anything
+        """
+
+        if obj is None:
+            return
+        del_obj = f"{obj.__class__.__name__}.{obj.id}"
+
+        try:
+            del FileStorage.__objects[del_obj]
+        except AttributeError:
+            pass
+        except KeyboardInterrupt:
             pass
